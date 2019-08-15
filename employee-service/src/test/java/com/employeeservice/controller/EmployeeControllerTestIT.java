@@ -1,6 +1,7 @@
 package com.employeeservice.controller;
 
 
+import com.employeeservice.constants.EmployeeConstants;
 import com.employeeservice.entity.Employee;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
@@ -195,6 +196,25 @@ public class EmployeeControllerTestIT {
                 .jsonPath("$.age").isEqualTo(age)
                 .jsonPath("$.gender").isEqualTo(gender)
                 .jsonPath("$.role").isEqualTo(role);
+    }
+
+    @Test
+    void deleteMovie() {
+
+        webTestClient.delete().uri(contextPath.concat(EMPLOYEE_BY_ID_PATH_PARAM_V1), 1000)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .isEqualTo(DELETE_MESSAGE);
+
+    }
+
+    @Test
+    void deleteMovie_invalidMovieId() {
+
+        webTestClient.delete().uri(contextPath.concat(EMPLOYEE_BY_ID_PATH_PARAM_V1), 2000)
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
 }

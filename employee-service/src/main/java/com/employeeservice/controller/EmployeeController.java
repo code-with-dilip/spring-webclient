@@ -1,5 +1,6 @@
 package com.employeeservice.controller;
 
+import com.employeeservice.constants.EmployeeConstants;
 import com.employeeservice.entity.Employee;
 import com.employeeservice.repository.EmployeeRepository;
 import io.swagger.annotations.ApiOperation;
@@ -88,6 +89,12 @@ public class EmployeeController {
         }
     }
 
+    @ApiOperation("Adds a new Employee.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 201, message = "Employee Successfully added to the InMemory DB.")
+            }
+    )
     @PostMapping(ADD_EMPLOYEE_V1)
     public ResponseEntity<?> createMovie(@Valid @RequestBody Employee employee) {
 
@@ -98,6 +105,13 @@ public class EmployeeController {
 
     }
 
+    @ApiOperation("Updates the Employee details.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Employee details are successfully updated to the DB."),
+                    @ApiResponse(code = 404, message = "No Employee found for the id that's passed."),
+            }
+    )
     @PutMapping(EMPLOYEE_BY_ID_PATH_PARAM_V1)
     public ResponseEntity<?> updateEmployee(@PathVariable Long id, @RequestBody Employee updateEmployee) {
         log.info("Received the request to update the employee. Employee Id is {} and the updated Employee Details are {} ", id, updateEmployee);
@@ -134,6 +148,30 @@ public class EmployeeController {
         if (checkEmptyNullString(updateEmployee.getRole()) && !updateEmployee.getRole().equals(employeeToUpdate.getRole())) {
             employeeToUpdate.setRole(updateEmployee.getRole());
         }
+    }
+
+    @ApiOperation("Removes the Employee details.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Employee details are successfully deleted from the DB."),
+                    @ApiResponse(code = 404, message = "No Employee found for the year that's passed."),
+            }
+    )
+    @DeleteMapping(EMPLOYEE_BY_ID_PATH_PARAM_V1)
+    public ResponseEntity<?> deleteMovie(@PathVariable Long id) {
+
+        log.info("Received the request to delete a Employee and the id is {} .", id);
+        Optional<Employee> movieToUpdateOptional = employeeRepository.findById(id);
+        if (movieToUpdateOptional.isPresent()) {
+            employeeRepository.deleteById(id);
+            log.info("Employee Successfully deleted from the DB");
+            return ResponseEntity.status(HttpStatus.OK).body(EmployeeConstants.DELETE_MESSAGE);
+        } else {
+            log.info("No Employee available for the given Movie Id - {}.", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+
     }
 
     private boolean checkEmptyNullString(String input) {

@@ -7,4 +7,5 @@ public class EmployeeConstants {
     public static final String ADD_EMPLOYEE_V1 = "/v1/employee";
     public static final String ERROR_MESSAGE = "Please pass all the input fields : ";
 
+    public static final String DELETE_MESSAGE = "Employee deleted successfully.";
 }
