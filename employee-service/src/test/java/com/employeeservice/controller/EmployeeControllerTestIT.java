@@ -2,6 +2,7 @@ package com.employeeservice.controller;
 
 
 import com.employeeservice.entity.Employee;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +39,7 @@ public class EmployeeControllerTestIT {
     private String contextPath;
 
     @Test
-    void getAllItems(){
+    void getAllItems() {
 
         List<Employee> employeeList = webTestClient.get()
                 .uri(contextPath.concat(GET_ALL_MOVIES_V1))
@@ -113,7 +115,35 @@ public class EmployeeControllerTestIT {
                 .expectStatus().isNotFound();
     }
 
+    @Test
+    void createMovie() {
 
+        //given
+        Employee employee = new Employee(null, "Chris", "Evans", 50, "male", "Lead Engineer");
 
+        //when
+        webTestClient.post().uri(contextPath.concat(ADD_EMPLOYEE_V1))
+                .body(Mono.just(employee), Employee.class)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").isNotEmpty();
+    }
+
+    @Test
+    void createMovie_Validating_Input_Data() throws JsonProcessingException {
+
+        //given
+        Employee newMovie = new Employee(null, "", null, null,"female", "Manager" );
+        String expectedErrorMessage = "Please pass all the input fields : [firstName, lastName]";
+
+        //when
+        webTestClient.post().uri(contextPath.concat(ADD_EMPLOYEE_V1))
+                .body(Mono.just(newMovie), Employee.class)
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody(String.class)
+                .isEqualTo(expectedErrorMessage);
+    }
 
 }

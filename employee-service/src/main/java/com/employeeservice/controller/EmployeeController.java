@@ -1,6 +1,5 @@
 package com.employeeservice.controller;
 
-import com.employeeservice.constants.EmployeeConstants;
 import com.employeeservice.entity.Employee;
 import com.employeeservice.repository.EmployeeRepository;
 import io.swagger.annotations.ApiOperation;
@@ -11,11 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +41,13 @@ public class EmployeeController {
         return employees;
     }
 
+    @ApiOperation("Retrieve an Employee using the Employee id.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Returns the Employee for the id."),
+                    @ApiResponse(code = 404, message = "No Employee found for the id that's passed."),
+            }
+    )
     @GetMapping(EMPLOYEE_BY_ID_PATH_PARAM_V1)
     public ResponseEntity<?> employeeById(@PathVariable Long id) {
 
@@ -58,6 +62,14 @@ public class EmployeeController {
         }
     }
 
+
+    @ApiOperation("Returns the Employees using the employee name passed as part of the request.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Returns the Employees using the FirstName or LastName of the employee."),
+                    @ApiResponse(code = 404, message = "No Employee found for the name thats passed."),
+            }
+    )
     @GetMapping(EMPLOYEE_BY_NAME_QUERY_PARAM_V1)
     public ResponseEntity<?> movieByName(@RequestParam("employee_name") String name) {
 
@@ -72,6 +84,16 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.OK).body(employees);
 
         }
+    }
+
+    @PostMapping(ADD_EMPLOYEE_V1)
+    public ResponseEntity<?> createMovie(@Valid @RequestBody Employee employee) {
+
+        log.info("Received the request to add a new Employee in the service {} ", employee);
+        Employee addedEmployee = employeeRepository.save(employee);
+        log.info("Employee SuccessFully added to the DB. New Employee Details are {} .", employee);
+        return ResponseEntity.status(HttpStatus.CREATED).body(addedEmployee);
+
     }
 
 
