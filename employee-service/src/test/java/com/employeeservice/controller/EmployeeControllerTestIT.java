@@ -16,8 +16,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.employeeservice.constants.EmployeeConstants.GET_ALL_MOVIES_V1;
-import static com.employeeservice.constants.EmployeeConstants.EMPLOYEE_BY_ID_PATH_PARAM_V1;
+import static com.employeeservice.constants.EmployeeConstants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -73,6 +72,47 @@ public class EmployeeControllerTestIT {
                 .exchange()
                 .expectStatus().isNotFound();
     }
+
+    @Test
+    void employeeByFirstName() {
+
+        List<Employee> movies = webTestClient.get().uri(uriBuilder -> uriBuilder.path(contextPath.concat(EMPLOYEE_BY_NAME_QUERY_PARAM_V1))
+                .queryParam("employee_name", "Adam")
+                .build())
+                .exchange()
+                .expectStatus().isOk()
+                .returnResult(Employee.class)
+                .getResponseBody()
+                .toStream().collect(Collectors.toList());
+
+        assertEquals(1, movies.size());
+    }
+
+    @Test
+    void employeeByLastName() {
+
+        List<Employee> movies = webTestClient.get().uri(uriBuilder -> uriBuilder.path(contextPath.concat(EMPLOYEE_BY_NAME_QUERY_PARAM_V1))
+                .queryParam("employee_name", "Sandler")
+                .build())
+                .exchange()
+                .expectStatus().isOk()
+                .returnResult(Employee.class)
+                .getResponseBody()
+                .toStream().collect(Collectors.toList());
+
+        assertEquals(1, movies.size());
+    }
+
+    @Test
+    void employeeByLastName_NotFound() {
+
+        webTestClient.get().uri(uriBuilder -> uriBuilder.path(contextPath.concat(EMPLOYEE_BY_NAME_QUERY_PARAM_V1))
+                .queryParam("employee_name", "ABC")
+                .build())
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
 
 
 
