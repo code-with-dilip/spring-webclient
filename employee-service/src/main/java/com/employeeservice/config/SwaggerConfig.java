@@ -21,7 +21,7 @@ public class SwaggerConfig {
 
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.movies.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.employeeservice.controller"))
                 //.paths(regex("/rest.*"))
                 .build()
                 .apiInfo(apiInfo());
@@ -39,7 +39,7 @@ public class SwaggerConfig {
                 "",
                 (springfox.documentation.service.Contact) contact,
                 "Employee RestFul Service- Source Code"
-                ,"https://github.com/code-with-dilip/spring-webclient",
+                ,"https://github.com/code-with-dilip/spring-webclient/tree/master/employee-service",
                 Arrays.asList(listVendorExtension));
         return apiInfo;
     }
