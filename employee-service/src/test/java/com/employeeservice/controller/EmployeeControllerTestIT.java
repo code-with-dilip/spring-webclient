@@ -2,7 +2,6 @@ package com.employeeservice.controller;
 
 
 import com.employeeservice.entity.Employee;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.employeeservice.constants.EmployeeConstants.GET_ALL_MOVIES_V1;
+import static com.employeeservice.constants.EmployeeConstants.EMPLOYEE_BY_ID_PATH_PARAM_V1;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -51,6 +51,29 @@ public class EmployeeControllerTestIT {
         assertEquals(2, employeeList.size());
 
     }
+
+    @Test
+    void employeeById() {
+
+        Employee movie = webTestClient.get().uri(contextPath.concat(EMPLOYEE_BY_ID_PATH_PARAM_V1), 1001)
+                .exchange()
+                .expectStatus().isOk()
+                .returnResult(Employee.class)
+                .getResponseBody()
+                .blockLast();
+
+        assertEquals("Christian", movie.getFirstName());
+
+    }
+
+    @Test
+    void employeeById_NotFound() {
+
+        webTestClient.get().uri(contextPath.concat(EMPLOYEE_BY_ID_PATH_PARAM_V1), 123)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
 
 
 }
