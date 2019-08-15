@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +54,11 @@ public class EmployeeController {
     public ResponseEntity<?> employeeById(@PathVariable Long id) {
 
         Optional<Employee> employeeOptional = employeeRepository.findById(id);
-        if(employeeOptional.isPresent()){
-            log.info("Response is {}.",employeeOptional.get());
+        if (employeeOptional.isPresent()) {
+            log.info("Response is {}.", employeeOptional.get());
             return ResponseEntity.status(HttpStatus.OK).body(employeeOptional.get());
 
-        }else{
+        } else {
             log.info("No Employee available with the given Employee Id - {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -96,5 +98,46 @@ public class EmployeeController {
 
     }
 
+    @PutMapping(EMPLOYEE_BY_ID_PATH_PARAM_V1)
+    public ResponseEntity<?> updateEmployee(@PathVariable Long id, @RequestBody Employee updateEmployee) {
+        log.info("Received the request to update the employee. Employee Id is {} and the updated Employee Details are {} ", id, updateEmployee);
+
+        Optional<Employee> employeeOptional = employeeRepository.findById(id);
+        if (employeeOptional.isPresent()) {
+            Employee employeeToUpdate = employeeOptional.get();
+            createEmployeeEntity(employeeToUpdate, updateEmployee);
+            employeeRepository.save(employeeToUpdate);
+            return ResponseEntity.status(HttpStatus.OK).body(employeeToUpdate);
+
+        } else {
+            log.info("No Employee available for the given Movie Id - {}.", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        }
+
 
     }
+
+    public void createEmployeeEntity(Employee employeeToUpdate, Employee updateEmployee) {
+        if (checkEmptyNullString(updateEmployee.getFirstName()) && !updateEmployee.getFirstName().equals(employeeToUpdate.getFirstName())) {
+            employeeToUpdate.setFirstName(updateEmployee.getFirstName());
+        }
+        if (checkEmptyNullString(updateEmployee.getLastName()) && !updateEmployee.getLastName().equals(employeeToUpdate.getLastName())) {
+            employeeToUpdate.setLastName(updateEmployee.getLastName());
+        }
+        if(updateEmployee!=null && updateEmployee.getAge()!=employeeToUpdate.getAge()){
+            employeeToUpdate.setAge(updateEmployee.getAge());
+        }
+        if (checkEmptyNullString(updateEmployee.getGender()) && !updateEmployee.getGender().equals(employeeToUpdate.getGender())) {
+            employeeToUpdate.setGender(updateEmployee.getGender());
+        }
+        if (checkEmptyNullString(updateEmployee.getRole()) && !updateEmployee.getRole().equals(employeeToUpdate.getRole())) {
+            employeeToUpdate.setRole(updateEmployee.getRole());
+        }
+    }
+
+    private boolean checkEmptyNullString(String input) {
+        return !StringUtils.isEmpty(input) && !StringUtils.isEmpty(input.trim());
+    }
+
+}

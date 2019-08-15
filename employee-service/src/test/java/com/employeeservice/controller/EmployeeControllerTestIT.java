@@ -35,6 +35,9 @@ public class EmployeeControllerTestIT {
     @Autowired
     WebTestClient webTestClient;
 
+    @Autowired
+    EmployeeController employeeController;
+
     @Value("${server.servlet.context-path}")
     private String contextPath;
 
@@ -144,6 +147,54 @@ public class EmployeeControllerTestIT {
                 .expectStatus().is4xxClientError()
                 .expectBody(String.class)
                 .isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void createEmployeeEntity(){
+        Employee employeeToUpdate = new Employee(null, "Chris", "Evans", 50, "male", "Lead Engineer");
+        Employee updateEmployee = new Employee(null, "Chris1", "Evans1", 51, "male1", "Lead Engineer1");
+
+        employeeController.createEmployeeEntity(employeeToUpdate,updateEmployee);
+
+        assertEquals(employeeToUpdate.getFirstName(), updateEmployee.getFirstName());
+        assertEquals(employeeToUpdate.getLastName(), updateEmployee.getLastName());
+        assertEquals(employeeToUpdate.getAge(), updateEmployee.getAge());
+        assertEquals(employeeToUpdate.getRole(), updateEmployee.getRole());
+    }
+
+    @Test
+    void updateEmployee() {
+
+        //given
+        String firstMName = "Chris1";
+        String lastMName = "Evans1";
+        Integer age = 51;
+        String gender = "male1";
+        String role = "Lead Engineer1";
+        Employee updateEmployee = new Employee(null, firstMName, lastMName, age, gender, role);
+
+        //when
+        webTestClient.put().uri(contextPath.concat(EMPLOYEE_BY_ID_PATH_PARAM_V1), 1000)
+                .syncBody(updateEmployee)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.firstName").isEqualTo(firstMName)
+                .jsonPath("$.lastName").isEqualTo(lastMName)
+                .jsonPath("$.age").isEqualTo(age)
+                .jsonPath("$.gender").isEqualTo(gender)
+                .jsonPath("$.role").isEqualTo(role);
+
+
+        webTestClient.get().uri(contextPath.concat(EMPLOYEE_BY_ID_PATH_PARAM_V1), 1000)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.firstName").isEqualTo(firstMName)
+                .jsonPath("$.lastName").isEqualTo(lastMName)
+                .jsonPath("$.age").isEqualTo(age)
+                .jsonPath("$.gender").isEqualTo(gender)
+                .jsonPath("$.role").isEqualTo(role);
     }
 
 }
