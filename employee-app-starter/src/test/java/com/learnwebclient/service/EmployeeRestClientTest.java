@@ -1,4 +1,4 @@
-package java.com.learnwebclient.service;
+package com.learnwebclient.service;
 
 public class EmployeeRestClientTest {
 }
