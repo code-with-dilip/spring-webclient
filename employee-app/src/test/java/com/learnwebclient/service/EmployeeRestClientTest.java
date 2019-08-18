@@ -15,14 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class EmployeeRestClientTest {
 
     private String baseUrl = "http://localhost:8081/employeeservice";
-    EmployeeRestClient employeeRestClient;
-
-    @BeforeEach
-    void setUp(){
-        WebClient webClient = WebClient.create(baseUrl);
-        employeeRestClient = new EmployeeRestClient(webClient);
-    }
-
+    WebClient webClient = WebClient.create(baseUrl);
+    EmployeeRestClient employeeRestClient = new EmployeeRestClient(webClient);;
 
     @Test
     void retrieveAllEmployees(){
