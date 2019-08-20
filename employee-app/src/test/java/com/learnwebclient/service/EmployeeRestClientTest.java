@@ -1,6 +1,8 @@
 package com.learnwebclient.service;
 
 import com.learnwebclient.dto.Employee;
+import com.learnwebclient.exception.ClientDataException;
+import com.learnwebclient.exception.EmployeeServiceException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,14 @@ public class EmployeeRestClientTest {
     }
 
     @Test
+    void retrieveEmployeeById_Custom_Error_Handling_Client_Data_Exception(){
+
+        int employeeId = 100;
+        Assertions.assertThrows(ClientDataException.class, () -> employeeRestClient.retrieveEmployeeById_Custom_Error_Handling(employeeId));
+    }
+
+
+    @Test
     void retrieveEmployeeByName(){
         List<Employee> employees =employeeRestClient.retrieveEmployeeByName("Sandler");
         assertEquals(1, employees.size());
@@ -65,6 +75,13 @@ public class EmployeeRestClientTest {
 
         String expectedErrorMessage = "Please pass all the input fields : [firstName]";
         Assertions.assertThrows(WebClientResponseException.class, () ->  employeeRestClient.addNewEmployee(employee), expectedErrorMessage);
+
+    }
+
+    @Test
+    void addNewEmployee_custom_Error_Handling(){
+        Employee employee = new Employee(null,null, "Man", 54, "male", "Architect");
+        Assertions.assertThrows(ClientDataException.class, () ->  employeeRestClient.addNewEmployee_custom_Error_Handling(employee));
 
     }
 
@@ -103,6 +120,11 @@ public class EmployeeRestClientTest {
         Assertions.assertThrows(WebClientResponseException.class,() -> employeeRestClient.deleteEmployeeById(100));
     }
 
+    @Test
+    void errorEndpoint(){
+
+        Assertions.assertThrows(EmployeeServiceException.class,() -> employeeRestClient.errorEndpoint());
+    }
 
 
 }

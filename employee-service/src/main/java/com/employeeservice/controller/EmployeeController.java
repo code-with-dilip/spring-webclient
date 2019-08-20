@@ -13,12 +13,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.employeeservice.constants.EmployeeConstants.*;
 
@@ -28,6 +30,19 @@ public class EmployeeController {
 
     @Autowired
     EmployeeRepository employeeRepository;
+
+    Function<Long,ResponseStatusException > notFoundId = (id) -> {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "No Employee Available with the given Id - "+ id);
+    };
+
+    Function<String,ResponseStatusException > notFoundName = (name) -> {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Employee Available with the given name - "+ name);
+    };
+
+    Supplier<ResponseStatusException > serverError = () -> {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "RunTimeException from Employee Service");
+    };
+
 
     @GetMapping(GET_ALL_MOVIES_V1)
     @ApiOperation("Retrieves all the Employees")
@@ -61,8 +76,12 @@ public class EmployeeController {
 
         } else {
             log.info("No Employee available with the given Employee Id - {}", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+           throw notFoundId.apply(id);
         }
+    }
+
+    @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "video not found")
+    public class EmployeeNotFoundException extends RuntimeException {
     }
 
 
@@ -81,7 +100,7 @@ public class EmployeeController {
         List<Employee> employees = employeeRepository.findByEmployeeName(name);
         if (CollectionUtils.isEmpty(employees)) {
             log.info("No Employee available for the given Employee name - {}.", name);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            throw notFoundName.apply(name);
         } else {
             log.info("Response is : {}", employees);
             return ResponseEntity.status(HttpStatus.OK).body(employees);
@@ -125,7 +144,7 @@ public class EmployeeController {
 
         } else {
             log.info("No Employee available for the given Movie Id - {}.", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            throw notFoundId.apply(id);
 
         }
 
@@ -168,10 +187,16 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.OK).body(EmployeeConstants.DELETE_MESSAGE);
         } else {
             log.info("No Employee available for the given Movie Id - {}.", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            throw  notFoundId.apply(id);
         }
 
 
+    }
+
+    @GetMapping(ERROR_ENDPOINT)
+    public ResponseEntity<?> errorEndpoint() {
+
+            throw serverError.get();
     }
 
     private boolean checkEmptyNullString(String input) {
