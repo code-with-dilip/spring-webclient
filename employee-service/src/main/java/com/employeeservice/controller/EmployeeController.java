@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.employeeservice.constants.EmployeeConstants.*;
 
@@ -37,6 +38,11 @@ public class EmployeeController {
     Function<String,ResponseStatusException > notFoundName = (name) -> {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Employee Available with the given name - "+ name);
     };
+
+    Supplier<ResponseStatusException > serverError = () -> {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "RunTimeException from Employee Service");
+    };
+
 
     @GetMapping(GET_ALL_MOVIES_V1)
     @ApiOperation("Retrieves all the Employees")
@@ -185,6 +191,12 @@ public class EmployeeController {
         }
 
 
+    }
+
+    @GetMapping(ERROR_ENDPOINT)
+    public ResponseEntity<?> errorEndpoint() {
+
+            throw serverError.get();
     }
 
     private boolean checkEmptyNullString(String input) {

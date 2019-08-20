@@ -2,6 +2,7 @@ package com.learnwebclient.service;
 
 import com.learnwebclient.dto.Employee;
 import com.learnwebclient.exception.ClientDataException;
+import com.learnwebclient.exception.EmployeeServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -29,6 +30,14 @@ public class EmployeeRestClient {
         return errorResponse.flatMap((message) -> {
             log.error("ErrorResponse Code is " + clientResponse.rawStatusCode() + " and the exception message is : " + message);
             throw new ClientDataException(message);
+        });
+    }
+
+    public Mono<EmployeeServiceException> handle5xxErrorResponse(ClientResponse clientResponse) {
+        Mono<String> errorResponse = clientResponse.bodyToMono(String.class);
+        return errorResponse.flatMap((message) -> {
+            log.error("ErrorResponse Code is " + clientResponse.rawStatusCode() + " and the exception message is : " + message);
+            throw new EmployeeServiceException(message);
         });
     }
 
@@ -72,6 +81,7 @@ public class EmployeeRestClient {
         return webClient.get().uri(EMPLOYEE_BY_ID_V1, employeeId)
                 .retrieve()
                 .onStatus(HttpStatus::is4xxClientError, clientResponse -> handle4xxErrorResponse(clientResponse))
+                .onStatus(HttpStatus::is5xxServerError, clientResponse -> handle5xxErrorResponse(clientResponse))
                 .bodyToMono(Employee.class)
                 .block();
     }
@@ -120,6 +130,7 @@ public class EmployeeRestClient {
                     .syncBody(employee)
                     .retrieve()
                     .onStatus(HttpStatus::is4xxClientError, clientResponse -> handle4xxErrorResponse(clientResponse))
+                    .onStatus(HttpStatus::is5xxServerError, clientResponse -> handle5xxErrorResponse(clientResponse))
                     .bodyToMono(Employee.class)
                     .block();
     }

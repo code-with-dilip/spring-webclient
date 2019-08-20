@@ -2,6 +2,7 @@ package com.learnwebclient.service;
 
 import com.learnwebclient.dto.Employee;
 import com.learnwebclient.exception.ClientDataException;
+import com.learnwebclient.exception.EmployeeServiceException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,11 +41,19 @@ public class EmployeeRestClientTest {
     }
 
     @Test
-    void retrieveEmployeeById_Custom_Error_Handling(){
+    void retrieveEmployeeById_Custom_Error_Handling_Client_Data_Exception(){
 
         int employeeId = 100;
         Assertions.assertThrows(ClientDataException.class, () -> employeeRestClient.retrieveEmployeeById_Custom_Error_Handling(employeeId));
     }
+
+    @Test
+    void retrieveEmployeeById_Custom_Error_Handling_EmployeeServiceException(){
+
+        int employeeId = 100;
+        Assertions.assertThrows(EmployeeServiceException.class, () -> employeeRestClient.retrieveEmployeeById_Custom_Error_Handling(employeeId));
+    }
+
 
 
     @Test

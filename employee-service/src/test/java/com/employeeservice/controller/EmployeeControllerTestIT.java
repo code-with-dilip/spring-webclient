@@ -217,4 +217,11 @@ public class EmployeeControllerTestIT {
                 .expectStatus().isNotFound();
     }
 
+    @Test
+    void errorEndpoint() {
+
+        webTestClient.get().uri(contextPath+ERROR_ENDPOINT)
+                .exchange()
+                .expectStatus().is5xxServerError();
+    }
 }
