@@ -169,4 +169,14 @@ public class EmployeeRestClient {
         }
 
     }
+
+    public String errorEndpoint(){
+
+        return webClient.get().uri(ERROR_EMPLOYEE_V1)
+                .retrieve()
+                .onStatus(HttpStatus::is4xxClientError, clientResponse -> handle4xxErrorResponse(clientResponse))
+                .onStatus(HttpStatus::is5xxServerError, clientResponse -> handle5xxErrorResponse(clientResponse))
+                .bodyToMono(String.class)
+                .block();
+    }
 }

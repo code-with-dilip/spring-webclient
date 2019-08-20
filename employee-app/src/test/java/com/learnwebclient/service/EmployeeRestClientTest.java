@@ -47,14 +47,6 @@ public class EmployeeRestClientTest {
         Assertions.assertThrows(ClientDataException.class, () -> employeeRestClient.retrieveEmployeeById_Custom_Error_Handling(employeeId));
     }
 
-    @Test
-    void retrieveEmployeeById_Custom_Error_Handling_EmployeeServiceException(){
-
-        int employeeId = 100;
-        Assertions.assertThrows(EmployeeServiceException.class, () -> employeeRestClient.retrieveEmployeeById_Custom_Error_Handling(employeeId));
-    }
-
-
 
     @Test
     void retrieveEmployeeByName(){
@@ -128,6 +120,11 @@ public class EmployeeRestClientTest {
         Assertions.assertThrows(WebClientResponseException.class,() -> employeeRestClient.deleteEmployeeById(100));
     }
 
+    @Test
+    void errorEndpoint(){
+
+        Assertions.assertThrows(EmployeeServiceException.class,() -> employeeRestClient.errorEndpoint());
+    }
 
 
 }
