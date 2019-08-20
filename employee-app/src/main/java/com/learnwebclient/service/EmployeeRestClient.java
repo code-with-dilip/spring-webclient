@@ -1,11 +1,15 @@
 package com.learnwebclient.service;
 
 import com.learnwebclient.dto.Employee;
+import com.learnwebclient.exception.ClientDataException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -18,6 +22,14 @@ public class EmployeeRestClient {
 
     public EmployeeRestClient(WebClient webClient) {
         this.webClient = webClient;
+    }
+
+    public Mono<RuntimeException> handle4xxErrorResponse(ClientResponse clientResponse) {
+        Mono<String> errorResponse = clientResponse.bodyToMono(String.class);
+        return errorResponse.flatMap((message) -> {
+            log.error("ErrorResponse Code is " + clientResponse.rawStatusCode() + " and the exception message is : " + message);
+            throw new ClientDataException(message);
+        });
     }
 
     public List<Employee> retrieveAllEmployees() {
@@ -37,6 +49,7 @@ public class EmployeeRestClient {
         }
     }
 
+
     public Employee retrieveEmployeeById(int employeeId) {
 
         try {
@@ -53,6 +66,16 @@ public class EmployeeRestClient {
             throw ex;
         }
     }
+
+    public Employee retrieveEmployeeById_Custom_Error_Handling(int employeeId) {
+
+        return webClient.get().uri(EMPLOYEE_BY_ID_V1, employeeId)
+                .retrieve()
+                .onStatus(HttpStatus::is4xxClientError, clientResponse -> handle4xxErrorResponse(clientResponse))
+                .bodyToMono(Employee.class)
+                .block();
+    }
+
 
     public List<Employee> retrieveEmployeeByName(String employeeName) {
 
@@ -90,6 +113,15 @@ public class EmployeeRestClient {
             log.error("Exception in addNewEmployee ", ex);
             throw ex;
         }
+    }
+
+    public Employee addNewEmployee_custom_Error_Handling(Employee employee) {
+            return webClient.post().uri(ADD_EMPLOYEE_V1)
+                    .syncBody(employee)
+                    .retrieve()
+                    .onStatus(HttpStatus::is4xxClientError, clientResponse -> handle4xxErrorResponse(clientResponse))
+                    .bodyToMono(Employee.class)
+                    .block();
     }
 
     public Employee updateEmployee(int id, Employee employee) {
