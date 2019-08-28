@@ -9,9 +9,10 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.retry.Retry;
 
+import java.time.Duration;
 import java.util.List;
 
 import static com.learnwebclient.constants.EmployeeConstants.*;
@@ -24,6 +25,23 @@ public class EmployeeRestClient {
     public EmployeeRestClient(WebClient webClient) {
         this.webClient = webClient;
     }
+
+    public static Retry<?> fixedRetry = Retry.anyOf(WebClientResponseException .class)
+            .fixedBackoff(Duration.ofSeconds(2))
+            .retryMax(3)
+            .doOnRetry((exception) -> {
+                log.info("The exception is : " + exception);
+
+            });
+
+
+    public static Retry<?> fixedRetry5xx = Retry.anyOf(EmployeeServiceException .class)
+            .fixedBackoff(Duration.ofSeconds(2))
+            .retryMax(3)
+            .doOnRetry((exception) -> {
+                log.info("The exception is : " + exception);
+
+            });
 
     public Mono<RuntimeException> handle4xxErrorResponse(ClientResponse clientResponse) {
         Mono<String> errorResponse = clientResponse.bodyToMono(String.class);
@@ -86,6 +104,23 @@ public class EmployeeRestClient {
                 .block();
     }
 
+    public Employee retrieveEmployeeById_WithRetry(int employeeId) {
+
+        try {
+            return webClient.get().uri(EMPLOYEE_BY_ID_V1, employeeId)
+                    .retrieve()
+                    .bodyToMono(Employee.class)
+                    .retryWhen(fixedRetry)
+                    .block();
+        } catch (WebClientResponseException ex) {
+            log.error("Error Response code is : {} and the message is {}", ex.getRawStatusCode(), ex.getResponseBodyAsString());
+            log.error("WebClientResponseException in retrieveEmployeeById", ex);
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Exception in retrieveEmployeeById ", ex);
+            throw new EmployeeServiceException(ex.getMessage());
+        }
+    }
 
     public List<Employee> retrieveEmployeeByName(String employeeName) {
 
@@ -177,6 +212,17 @@ public class EmployeeRestClient {
                 .onStatus(HttpStatus::is4xxClientError, clientResponse -> handle4xxErrorResponse(clientResponse))
                 .onStatus(HttpStatus::is5xxServerError, clientResponse -> handle5xxErrorResponse(clientResponse))
                 .bodyToMono(String.class)
+                .block();
+    }
+
+    public String errorEndpoint_fixedRetry(){
+
+        return webClient.get().uri(ERROR_EMPLOYEE_V1)
+                .retrieve()
+                .onStatus(HttpStatus::is4xxClientError, clientResponse -> handle4xxErrorResponse(clientResponse))
+                .onStatus(HttpStatus::is5xxServerError, clientResponse -> handle5xxErrorResponse(clientResponse))
+                .bodyToMono(String.class)
+                .retryWhen(fixedRetry5xx)
                 .block();
     }
 }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.retry.RetryExhaustedException;
 
 import java.util.List;
 
@@ -37,6 +38,13 @@ public class EmployeeRestClientTest {
     void retrieveEmployeeById_NotFound(){
         int employeeId = 100;
         Assertions.assertThrows(WebClientResponseException.class, () -> employeeRestClient.retrieveEmployeeById(employeeId));
+
+    }
+
+    @Test
+    void retrieveEmployeeById_WithRetry(){
+        int employeeId = 100;
+        Assertions.assertThrows(EmployeeServiceException.class, () -> employeeRestClient.retrieveEmployeeById_WithRetry(employeeId));
 
     }
 
@@ -124,6 +132,12 @@ public class EmployeeRestClientTest {
     void errorEndpoint(){
 
         Assertions.assertThrows(EmployeeServiceException.class,() -> employeeRestClient.errorEndpoint());
+    }
+
+    @Test
+    void errorEndpoint_withRetry(){
+
+        Assertions.assertThrows(RetryExhaustedException.class,() -> employeeRestClient.errorEndpoint_fixedRetry());
     }
 
 
