@@ -41,6 +41,13 @@ public class EmployeeRestClientTest {
     }
 
     @Test
+    void retrieveEmployeeById_WithRetry(){
+        int employeeId = 100;
+        Assertions.assertThrows(EmployeeServiceException.class, () -> employeeRestClient.retrieveEmployeeById_WithRetry(employeeId));
+
+    }
+
+    @Test
     void retrieveEmployeeById_Custom_Error_Handling_Client_Data_Exception(){
 
         int employeeId = 100;
@@ -124,6 +131,12 @@ public class EmployeeRestClientTest {
     void errorEndpoint(){
 
         Assertions.assertThrows(EmployeeServiceException.class,() -> employeeRestClient.errorEndpoint());
+    }
+
+    @Test
+    void errorEndpoint_withRetry(){
+
+        Assertions.assertThrows(EmployeeServiceException.class,() -> employeeRestClient.errorEndpoint_fixedRetry());
     }
 
 
