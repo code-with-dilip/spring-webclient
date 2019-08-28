@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.retry.RetryExhaustedException;
 
 import java.util.List;
 
@@ -136,7 +137,7 @@ public class EmployeeRestClientTest {
     @Test
     void errorEndpoint_withRetry(){
 
-        Assertions.assertThrows(EmployeeServiceException.class,() -> employeeRestClient.errorEndpoint_fixedRetry());
+        Assertions.assertThrows(RetryExhaustedException.class,() -> employeeRestClient.errorEndpoint_fixedRetry());
     }
 
 
